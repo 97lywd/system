@@ -8,8 +8,7 @@
 #include<errno.h>
 int main()
 {
-    umask(0);
-    char *file = "./test.fifo";
+    char *file = "./test.txt";
     int ret = mkfifo(file,0664);
     if(ret < 0 && errno != EEXIST){
         
@@ -21,15 +20,18 @@ int main()
         perror("open error");
         return -1;
     }
+    char buff[1024];
     while(1){
-        char buff[1024] = {0};
-        scanf("%s",buff);
-        ret = write(fd,buff,strlen(buff));
-        if(ret < 0){
-            perror("write error");
-            return -1;
+        buff[0] = 0;
+        fflush(stdout);
+        ssize_t s = read(0,buff,sizeof(buff) - 1);
+        if(s > 0){
+           buff[s] = 0;
+           write(fd,buff,strlen(buff));
+        }else if(s <= 0){
+            perror("read error");
         }
-    }
+        }
     close(fd);
     return 0;
 }
